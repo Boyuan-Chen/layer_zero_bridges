@@ -1,0 +1,24 @@
+{
+  "name": "layer_zero_bridges.nosync",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "node deploy.js",
+    "bridge": "node bridge.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Boyuan-Chen/layer_zero_bridges.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Boyuan-Chen/layer_zero_bridges/issues"
+  },
+  "homepage": "https://github.com/Boyuan-Chen/layer_zero_bridges#readme",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "ethers": "^5.6.9"
+  }
+}
