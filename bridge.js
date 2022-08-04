@@ -102,8 +102,8 @@ const main = async () => {
     altL1Wallet
   );
 
-  const preEthBOBABalance = await EthBOBA.balanceOf(ethWallet.address);
-  const preAltL1BOBABalance = await AltL1BOBA.balanceOf(altL1Wallet.address);
+  let preEthBOBABalance = await EthBOBA.balanceOf(ethWallet.address);
+  let preAltL1BOBABalance = await AltL1BOBA.balanceOf(altL1Wallet.address);
 
   console.log({
     preEthBOBABalance: ethers.utils.formatEther(preEthBOBABalance),
@@ -118,13 +118,13 @@ const main = async () => {
 
   console.log(`Sending BOBA tokens From ETH to Alt L1....`);
 
-  const approveTx = await EthBOBA.approve(
+  let approveTx = await EthBOBA.approve(
     Proxy__EthBridge.address,
     ethers.utils.parseEther("0.5")
   );
   await approveTx.wait();
 
-  const payload = ethers.utils.defaultAbiCoder.encode(
+  let payload = ethers.utils.defaultAbiCoder.encode(
     ["address", "address", "address", "address", "uint256", "bytes"],
     [
       ETH_L1_BOBA_ADDRESS,
@@ -136,7 +136,7 @@ const main = async () => {
     ]
   );
 
-  const estimatedFee = await ETHLayzerZeroEndpoint.estimateFees(
+  let estimatedFee = await ETHLayzerZeroEndpoint.estimateFees(
     LAYER_ZERO_ALT_L1_CHAIN_ID,
     Proxy__EthBridge.address,
     payload,
@@ -144,7 +144,7 @@ const main = async () => {
     '0x'
   )
 
-  console.log({ estimatedFee });
+  console.log({ estimatedFee: ethers.utils.formatEther(estimatedFee._nativeFee) });
 
   await Proxy__EthBridge.depositERC20(
     ETH_L1_BOBA_ADDRESS,
@@ -156,8 +156,8 @@ const main = async () => {
     { value: estimatedFee._nativeFee }
   )
 
-  const postEthBOBABalance = await EthBOBA.balanceOf(ethWallet.address);
-  const postAltL1BOBABalance = await AltL1BOBA.balanceOf(altL1Wallet.address);
+  let postEthBOBABalance = await EthBOBA.balanceOf(ethWallet.address);
+  let postAltL1BOBABalance = await AltL1BOBA.balanceOf(altL1Wallet.address);
 
   console.log({
     postEthBOBABalance: ethers.utils.formatEther(postEthBOBABalance),
@@ -174,11 +174,98 @@ const main = async () => {
     finalAltL1BOBABalance = await AltL1BOBA.balanceOf(altL1Wallet.address);
   }
 
-  console.log(`\nSucceeded!\n`)
+  console.log(`\nSucceeded - BOBA Token is transferred to ALT L1!\n`)
   console.log({
     finalAltL1BOBABalance: ethers.utils.formatEther(finalAltL1BOBABalance),
     postAltL1BOBABalance: ethers.utils.formatEther(postAltL1BOBABalance),
-})
+  })
+
+
+  preEthBOBABalance = await EthBOBA.balanceOf(ethWallet.address);
+  preAltL1BOBABalance = await AltL1BOBA.balanceOf(altL1Wallet.address);
+
+  console.log({
+    preEthBOBABalance: ethers.utils.formatEther(preEthBOBABalance),
+    preAltL1BOBABalance: ethers.utils.formatEther(preAltL1BOBABalance),
+  });
+
+  if (
+    preAltL1BOBABalance.lt(ethers.BigNumber.from(ethers.utils.parseEther("0.5")))
+  ) {
+    throw new Error("AltBOBA balance is too low");
+  }
+
+  console.log(`\nSending BOBA tokens From Alt L1 to Alt ETH....`);
+
+  approveTx = await AltL1BOBA.approve(
+    Proxy__AltL1Bridge.address,
+    ethers.utils.parseEther("0.5")
+  );
+  await approveTx.wait();
+
+  payload = ethers.utils.defaultAbiCoder.encode(
+    ["address", "address", "address", "address", "uint256", "bytes"],
+    [
+      ETH_L1_BOBA_ADDRESS,
+      ALT_L1_BOBA_ADDRESS,
+      ethWallet.address,
+      altL1Wallet.address,
+      ethers.utils.parseEther("0.5"),
+      "0x",
+    ]
+  );
+
+  estimatedFee = await AltL1LayerZeroEndpoint.estimateFees(
+    LAYER_ZERO_ETH_CHAIN_ID,
+    Proxy__AltL1Bridge.address,
+    payload,
+    false,
+    '0x'
+  )
+
+  console.log({ estimatedFee: ethers.utils.formatEther(estimatedFee._nativeFee) });
+
+  await Proxy__AltL1Bridge.withdraw(
+    ALT_L1_BOBA_ADDRESS,
+    ethers.utils.parseEther("0.5"),
+    ethers.constants.AddressZero,
+    '0x', // adapterParams
+    '0x',
+    { value: estimatedFee._nativeFee }
+  )
+
+  postEthBOBABalance = await EthBOBA.balanceOf(ethWallet.address);
+  postAltL1BOBABalance = await AltL1BOBA.balanceOf(altL1Wallet.address);
+
+  console.log({
+    postEthBOBABalance: ethers.utils.formatEther(postEthBOBABalance),
+    postAltL1BOBABalance: ethers.utils.formatEther(postAltL1BOBABalance),
+  });
+
+  let finalEthL1BOBABalance = await EthBOBA.balanceOf(altL1Wallet.address);
+  while (finalEthL1BOBABalance.eq(postEthBOBABalance)) {
+    await sleep(15000);
+    console.log({
+        finalEthL1BOBABalance: ethers.utils.formatEther(finalEthL1BOBABalance),
+        postEthBOBABalance: ethers.utils.formatEther(postEthBOBABalance),
+    })
+    finalEthL1BOBABalance = await EthBOBA.balanceOf(altL1Wallet.address);
+  }
+
+  console.log(`\nSucceeded - BOBA Token is transferred to ETH L1!\n`)
+  console.log({
+    finalEthL1BOBABalance: ethers.utils.formatEther(finalEthL1BOBABalance),
+    postEthBOBABalance: ethers.utils.formatEther(postEthBOBABalance),
+  })
+
+
+  preEthBOBABalance = await EthBOBA.balanceOf(ethWallet.address);
+  preAltL1BOBABalance = await AltL1BOBA.balanceOf(altL1Wallet.address);
+
+  console.log({
+    preEthBOBABalance: ethers.utils.formatEther(preEthBOBABalance),
+    preAltL1BOBABalance: ethers.utils.formatEther(preAltL1BOBABalance),
+  });
 };
 
 function sleep(ms) {
