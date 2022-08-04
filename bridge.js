@@ -195,7 +195,7 @@ const main = async () => {
     throw new Error("AltBOBA balance is too low");
   }
 
-  console.log(`\nSending BOBA tokens From Alt L1 to Alt ETH....`);
+  console.log(`\nSending BOBA tokens From Alt L1 to ETH....`);
 
   approveTx = await AltL1BOBA.approve(
     Proxy__AltL1Bridge.address,

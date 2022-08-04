@@ -176,21 +176,20 @@ const main = async () => {
     throw new Error("BOBA symbol mismatch");
   }
 
+  const payload = {
+    Proxy__AltL1Bridge: Proxy__AltL1Bridge.address,
+    AltL1Bridge: AltL1Bridge.address,
+    Proxy__EthBridge: Proxy__EthBridge.address,
+    EthBridge: EthBridge.address,
+    AltL1BOBA: BOBA.address,
+    ETHBOBA: ETH_L1_BOBA_ADDRESS,
+  }
   const dumpsPath = path.resolve(__dirname, "./addresses");
   const addrsPath = path.resolve(dumpsPath, `${LAYER_ZERO_CHAIN_NAME}.json`);
-  await fs.promises.writeFile(
-    addrsPath,
-    JSON.stringify({
-      Proxy__AltL1Bridge: Proxy__AltL1Bridge.address,
-      AltL1Bridge: AltL1Bridge.address,
-      Proxy__EthBridge: Proxy__EthBridge.address,
-      EthBridge: EthBridge.address,
-      AltL1BOBA: BOBA.address,
-      ETHBOBA: ETH_L1_BOBA_ADDRESS,
-    })
-  );
+  await fs.promises.writeFile(addrsPath, JSON.stringify(payload));
 
   console.log(`\nSucceeded!\n`)
+  console.log(payload)
 };
 
 const deployETHContract = async () => {
