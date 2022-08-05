@@ -87,15 +87,6 @@ const main = async () => {
     );
     await initProxyEthBridgeTX.wait();
     console.log(`Proxy__EthBridge initialized: ${initProxyEthBridgeTX.hash}`);
-
-    // Initialize contract
-    const initEthBridgeTX = await EthBridge.initialize(
-      LAYER_ZERO_ETH_ENDPOINT, // current chain layerZero endpoint
-      LAYER_ZERO_ALT_L1_CHAIN_ID, // destination (layerZero) chainId
-      Proxy__AltL1Bridge.address // the other bridge
-    );
-    await initEthBridgeTX.wait();
-    console.log(`EthBridge initialized: ${initEthBridgeTX.hash}`);
   }
 
   if (!ALT_L1_BRIDGE_ADDRESS || !PROXY_ALT_L1_BRIDGE_ADDRESS) {
@@ -114,15 +105,6 @@ const main = async () => {
     console.log(
       `Proxy__AltL1Bridge initialized: ${initProxyAltL1BridgeTX.hash}`
     );
-
-    // Initialize contract
-    const initAltL1BridgeTX = await AltL1Bridge.initialize(
-      LAYER_ZERO_TARGET_CHAIN_ENDPOINT, // current chain layerZero endpoint
-      LAYER_ZERO_ETH_CHAIN_ID, // destination (layerZero) chainId
-      Proxy__EthBridge.address // the other bridge
-    );
-    await initAltL1BridgeTX.wait();
-    console.log(`AltL1Bridge initialized: ${initAltL1BridgeTX.hash}`);
   }
 
   console.log("Deployment completed");
